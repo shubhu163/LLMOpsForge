@@ -1,0 +1,22 @@
+# Default evaluation run configuration.
+# Referenced by: llmopsforge eval --config configs/default.yaml
+
+name: default
+description: Baseline RAG evaluation configuration using the mock provider.
+
+rag:
+  top_k: 4
+  chunk_size: 600        # characters
+  chunk_overlap: 100     # characters
+  require_citations: true
+
+prompt_template_id: prompt_v1
+model_config_id: mock-small
+
+# Pass thresholds applied per-example to compute the final pass/fail status.
+thresholds:
+  answer_correctness_score: 0.5
+  citation_correctness_score: 0.5
+  grounding_score: 0.4
+  retrieval_relevance_score: 0.5
+  allow_hallucination: false   # if false, any hallucination_flag => fail

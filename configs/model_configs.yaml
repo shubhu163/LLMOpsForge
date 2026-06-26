@@ -1,0 +1,35 @@
+# Model configurations. Costs are illustrative per-1K-token rates used for the
+# deterministic cost estimator. The mock models cost $0 so local runs are free.
+models:
+  - id: mock-small
+    provider: mock
+    model_name: mock-small
+    temperature: 0.0
+    max_tokens: 512
+    input_cost_per_1k: 0.0
+    output_cost_per_1k: 0.0
+
+  - id: mock-large
+    provider: mock
+    model_name: mock-large
+    temperature: 0.0
+    max_tokens: 1024
+    input_cost_per_1k: 0.0
+    output_cost_per_1k: 0.0
+
+  # Optional real providers — require keys / local server, never used by default.
+  - id: openai-gpt-4o-mini
+    provider: openai
+    model_name: gpt-4o-mini
+    temperature: 0.0
+    max_tokens: 512
+    input_cost_per_1k: 0.00015
+    output_cost_per_1k: 0.0006
+
+  - id: ollama-llama3
+    provider: ollama
+    model_name: llama3
+    temperature: 0.0
+    max_tokens: 512
+    input_cost_per_1k: 0.0
+    output_cost_per_1k: 0.0

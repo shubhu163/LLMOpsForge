@@ -1,0 +1,38 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# Local data / artifacts
+data/
+*.db
+*.sqlite
+*.sqlite3
+.faiss/
+*.index
+
+# Reports
+reports/
+*.report.md
+*.report.json
+
+# Tooling
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Env
+.env
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

@@ -1,0 +1,28 @@
+# Prompt template v1 — concise, lower grounding discipline.
+# Intentionally weaker than v2 so regression comparisons are meaningful.
+id: prompt_v1
+name: Concise Answerer (v1)
+version: 1
+description: >
+  Answers briefly. Cites sources when asked but does not strongly enforce
+  grounding, and is less strict about JSON formatting.
+
+system: |
+  You are a helpful assistant answering questions about company documentation.
+  Answer concisely.
+
+instructions: |
+  Question: {question}
+
+  Context:
+  {context}
+
+  Answer the question using the context above. If citations are requested,
+  list the source document names you used.
+
+# Behavioral knobs interpreted by the MockLLMProvider / generator.
+behavior:
+  enforce_grounding: false
+  always_cite: false
+  strict_json: false
+  verbosity: low

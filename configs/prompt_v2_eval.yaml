@@ -1,0 +1,24 @@
+# Candidate evaluation config using prompt_v2 (grounded, citation-first, strict JSON).
+# Use as the candidate against configs/default.yaml (prompt_v1) for a regression demo:
+#   llmopsforge eval --config configs/default.yaml        --name baseline
+#   llmopsforge eval --config configs/prompt_v2_eval.yaml --name candidate
+#   llmopsforge regression --baseline-run-id <BASE> --candidate-run-id <CAND>
+
+name: candidate-v2
+description: Candidate RAG evaluation using prompt_v2.
+
+rag:
+  top_k: 4
+  chunk_size: 600
+  chunk_overlap: 100
+  require_citations: true
+
+prompt_template_id: prompt_v2
+model_config_id: mock-small
+
+thresholds:
+  answer_correctness_score: 0.5
+  citation_correctness_score: 0.5
+  grounding_score: 0.4
+  retrieval_relevance_score: 0.5
+  allow_hallucination: false

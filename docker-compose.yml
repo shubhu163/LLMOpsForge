@@ -1,0 +1,36 @@
+services:
+  api:
+    build:
+      context: .
+      args:
+        EXTRAS: "dev"
+    image: llmopsforge:latest
+    ports:
+      - "8000:8000"
+    environment:
+      LLMOPS_DATABASE_URL: sqlite:////app/data/llmopsforge.db
+      LLMOPS_DATA_DIR: /app/data
+      LLMOPS_DEFAULT_PROVIDER: mock
+    volumes:
+      - llmops_data:/app/data
+      - ./documents:/app/documents:ro
+      - ./datasets:/app/datasets:ro
+      - ./configs:/app/configs:ro
+
+  dashboard:
+    image: llmopsforge:latest
+    depends_on:
+      - api
+    command: >
+      streamlit run dashboard/streamlit_app.py
+      --server.port 8501 --server.address 0.0.0.0
+    ports:
+      - "8501:8501"
+    environment:
+      LLMOPS_DATABASE_URL: sqlite:////app/data/llmopsforge.db
+      LLMOPS_DATA_DIR: /app/data
+    volumes:
+      - llmops_data:/app/data
+
+volumes:
+  llmops_data:
