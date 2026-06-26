@@ -39,6 +39,7 @@ dashboard = [
     "altair>=5.2",
 ]
 openai = ["openai>=1.30"]
+openrouter = ["openai>=1.30"]  # OpenRouter speaks the OpenAI protocol
 dev = [
     "pytest>=8.1",
     "pytest-cov>=5.0",

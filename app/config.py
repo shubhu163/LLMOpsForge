@@ -48,6 +48,14 @@ class Settings(BaseSettings):
     openai_base_url: str | None = Field(default=None, alias="OPENAI_BASE_URL")
     ollama_base_url: str = Field(default="http://localhost:11434", alias="OLLAMA_BASE_URL")
 
+    # OpenRouter (OpenAI-compatible gateway to many real models, incl. free ones).
+    openrouter_api_key: str | None = Field(default=None, alias="OPENROUTER_API_KEY")
+    openrouter_base_url: str = Field(
+        default="https://openrouter.ai/api/v1", alias="OPENROUTER_BASE_URL"
+    )
+    openrouter_referer: str | None = Field(default=None, alias="OPENROUTER_REFERER")
+    openrouter_title: str | None = Field(default="LLMOpsForge", alias="OPENROUTER_TITLE")
+
     def model_post_init(self, __context: Any) -> None:  # noqa: D401
         """Derive the SQLite URL from ``data_dir`` when not explicitly set."""
         self.data_dir.mkdir(parents=True, exist_ok=True)

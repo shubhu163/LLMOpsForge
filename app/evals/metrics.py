@@ -94,6 +94,9 @@ class MetricResult:
     error_count: int
     passed: bool
     detail: dict[str, Any] = field(default_factory=dict)
+    # Optional LLM-as-judge results (None when no judge is configured).
+    judge_score: float | None = None
+    judge_detail: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)

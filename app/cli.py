@@ -102,13 +102,31 @@ def query(
 def eval(
     dataset: str = typer.Option("datasets/qa_eval.jsonl", "--dataset", help="JSONL dataset path."),
     config: str = typer.Option("configs/default.yaml", "--config", help="Eval config YAML."),
+    model: str | None = typer.Option(
+        None, "--model", help="Override the config's model_config_id (e.g. openrouter-free)."
+    ),
+    prompt: str | None = typer.Option(
+        None, "--prompt", help="Override the config's prompt_template_id (e.g. prompt_v2)."
+    ),
+    judge_model: str | None = typer.Option(
+        None, "--judge-model", help="Optional model config id for LLM-as-judge."
+    ),
     name: str | None = typer.Option(None, "--name", help="Optional run name."),
 ) -> None:
     """Run an evaluation over a dataset and print the summary."""
     _bootstrap()
     cfg = load_eval_config(config)
+    if model:
+        cfg.model_config_id = model
+    if prompt:
+        cfg.prompt_template_id = prompt
+    judge = None
+    if judge_model:
+        from app.evals.judge import build_judge
+
+        judge = build_judge(judge_model)
     with session_scope() as session:
-        run = EvalRunner(session).run(dataset_path=dataset, config=cfg, name=name)
+        run = EvalRunner(session, judge=judge).run(dataset_path=dataset, config=cfg, name=name)
         summary = run.summary
         run_id = run.id
 
@@ -134,6 +152,61 @@ def eval(
             table.add_row(key, str(summary[key]))
     console.print(table)
     console.print(f"\n[dim]Generate a report:[/dim] llmopsforge report --eval-run-id {run_id}")
+
+
+@app.command()
+def assess(
+    rag_url: str = typer.Option(
+        ..., "--rag-url", help="HTTP endpoint of the external RAG to assess."
+    ),
+    dataset: str = typer.Option("datasets/qa_eval.jsonl", "--dataset", help="JSONL dataset path."),
+    config: str = typer.Option("configs/default.yaml", "--config", help="Eval config YAML."),
+    judge_model: str | None = typer.Option(
+        None,
+        "--judge-model",
+        help="Optional model config id for LLM-as-judge (e.g. openrouter-free).",
+    ),
+    name: str | None = typer.Option(None, "--name", help="Optional run name."),
+) -> None:
+    """Assess an EXTERNAL RAG system (over HTTP) with the same metrics + judge.
+
+    The endpoint must accept POST {"question": ...} and return JSON with at least
+    an "answer" field (optionally "retrieved_contexts" and "citations").
+    """
+    _bootstrap()
+    from app.evals.adapters import HttpRagAdapter
+
+    cfg = load_eval_config(config)
+    adapter = HttpRagAdapter(rag_url)
+    judge = None
+    if judge_model:
+        from app.evals.judge import build_judge
+
+        judge = build_judge(judge_model)
+
+    with session_scope() as session:
+        run = EvalRunner(session, pipeline=adapter, judge=judge).run(
+            dataset_path=dataset, config=cfg, name=name or f"assess:{rag_url}"
+        )
+        summary, run_id = run.summary, run.id
+
+    console.print(f"\n[bold green]Assessment complete:[/bold green] [bold]{run_id}[/bold]")
+    table = Table(title=f"External RAG: {rag_url}", show_header=True, header_style="bold")
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    for key in (
+        "total_examples",
+        "passed",
+        "pass_rate",
+        "answer_correctness_avg",
+        "grounding_avg",
+        "hallucination_count",
+        "judge_overall_avg",
+        "avg_latency_ms",
+    ):
+        if summary.get(key) is not None:
+            table.add_row(key, str(summary[key]))
+    console.print(table)
 
 
 @app.command()

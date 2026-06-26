@@ -30,5 +30,11 @@ def build_provider(spec: ModelConfigSpec) -> BaseLLMProvider:
         from app.providers.ollama_provider import OllamaProvider
 
         return OllamaProvider(**kwargs)
+    if provider == "openrouter":
+        from app.providers.openrouter_provider import OpenRouterProvider
 
-    raise ProviderError(f"Unknown provider '{spec.provider}'. Supported: mock, openai, ollama.")
+        return OpenRouterProvider(**kwargs)
+
+    raise ProviderError(
+        f"Unknown provider '{spec.provider}'. Supported: mock, openai, ollama, openrouter."
+    )

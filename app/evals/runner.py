@@ -64,6 +64,9 @@ def _summarize(metrics: list[MetricResult]) -> dict[str, Any]:
     json_pass = sum(1 for m in json_considered if m.json_validity == "pass")
     passed = sum(1 for m in metrics if m.passed)
 
+    judged = [m.judge_score for m in metrics if m.judge_score is not None]
+    judge_avg = round(sum(judged) / len(judged), 4) if judged else None
+
     return {
         "total_examples": n,
         "passed": passed,
@@ -83,15 +86,19 @@ def _summarize(metrics: list[MetricResult]) -> dict[str, Any]:
         "total_estimated_tokens": sum(m.estimated_tokens for m in metrics),
         "total_estimated_cost_usd": round(sum(m.estimated_cost_usd for m in metrics), 6),
         "error_count": sum(m.error_count for m in metrics),
+        "judge_overall_avg": judge_avg,
     }
 
 
 class EvalRunner:
     """Runs an evaluation dataset and stores an :class:`EvalRun` with results."""
 
-    def __init__(self, session: Session, *, pipeline: RagPipeline | None = None):
+    def __init__(self, session: Session, *, pipeline=None, judge=None):
+        # ``pipeline`` is any RagSystem (the built-in RagPipeline or an external
+        # adapter). ``judge`` is an optional LLM-as-judge scorer.
         self.session = session
         self.pipeline = pipeline or RagPipeline(session)
+        self.judge = judge
 
     def run(
         self,
@@ -134,6 +141,18 @@ class EvalRunner:
                 result = _empty_result(config.model_config_id, config.prompt_template_id)
 
             metric = evaluate_example(task, result, config.thresholds, error_count=error_count)
+
+            # Optional LLM-as-judge pass (additive; does not change pass/fail).
+            if self.judge is not None and error_count == 0:
+                try:
+                    judge_detail = self.judge.evaluate(
+                        task, result.answer, [c.text for c in result.retrieved_contexts]
+                    )
+                    metric.judge_score = judge_detail.get("overall")
+                    metric.judge_detail = judge_detail
+                except Exception as exc:  # judge failures must not abort the run
+                    logger.warning("Judge failed for task %s: %s", task.id, exc)
+
             metrics.append(metric)
 
             self.session.add(

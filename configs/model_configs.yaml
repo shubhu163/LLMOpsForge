@@ -33,3 +33,31 @@ models:
     max_tokens: 512
     input_cost_per_1k: 0.0
     output_cost_per_1k: 0.0
+
+  # --- OpenRouter: real models via one OpenAI-compatible key ---
+  # Free model — zero cost, great for testing real RAG end to end.
+  - id: openrouter-free
+    provider: openrouter
+    model_name: "meta-llama/llama-3.3-70b-instruct:free"
+    temperature: 0.0
+    max_tokens: 512
+    input_cost_per_1k: 0.0
+    output_cost_per_1k: 0.0
+
+  # Cheap, fast paid model (prices are approximate; check openrouter.ai/models).
+  - id: openrouter-gpt-4o-mini
+    provider: openrouter
+    model_name: "openai/gpt-4o-mini"
+    temperature: 0.0
+    max_tokens: 512
+    input_cost_per_1k: 0.00015
+    output_cost_per_1k: 0.0006
+
+  # High quality paid model.
+  - id: openrouter-claude
+    provider: openrouter
+    model_name: "anthropic/claude-3.5-sonnet"
+    temperature: 0.0
+    max_tokens: 512
+    input_cost_per_1k: 0.003
+    output_cost_per_1k: 0.015
